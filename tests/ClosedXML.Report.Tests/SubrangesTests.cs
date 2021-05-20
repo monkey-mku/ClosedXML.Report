@@ -44,7 +44,8 @@ namespace ClosedXML.Report.Tests
                     using (var db = new DbDemos())
                     {
                         var custs = GetCustomers(db).Select(cust =>
-                        new {
+                        new
+                        {
                             CustNo = cust.CustNo,
                             Company = cust.Company,
                             Orders = cust.Orders,
@@ -62,6 +63,75 @@ namespace ClosedXML.Report.Tests
                 wb =>
                 {
                     CompareWithGauge(wb, templateFile);
+                });
+        }
+
+        [Fact]
+        public void GroupInSubRanges()
+        {
+            var random = new Random(1234);
+            var templateFile = "Subranges_Group.xlsx";
+            XlTemplateTest(templateFile,
+                tpl =>
+                {
+                    var orders = new List<order>();
+                    for (int i = 0; i < 10; i++)
+                    {
+                        orders.Add(new order()
+                        {
+                            OrderNo = i % 5,
+                            SaleDate = DateTime.Now,
+                            ShipDate = DateTime.Now,
+                            ItemsTotal = i,
+                            AmountPaid = i
+                        });
+                    }
+
+                    using (var db = new DbDemos())
+                    {
+                        var custs = GetCustomers(db).Select(cust =>
+                        new
+                        {
+                            CustNo = cust.CustNo,
+                            Company = cust.Company,
+                            Orders = orders
+                        });
+                        tpl.AddVariable("Customers", custs);
+                        tpl.AddVariable("user", "John Doe");
+                    }
+                },
+                wb =>
+                {
+                    wb.SaveAs("result.xlsx");
+                    //CompareWithGauge(wb, templateFile);
+                });
+        }
+
+        [Fact]
+        public void GroupInSubRangesTemp()
+        {
+            var random = new Random(1234);
+            var templateFile = "Subranges_Group_Temp.xlsx";
+            XlTemplateTest(templateFile,
+                tpl =>
+                {
+                    using (var db = new DbDemos())
+                    {
+                        var custs = GetCustomers(db).Select(cust =>
+                        new
+                        {
+                            CustNo = cust.CustNo,
+                            Company = cust.Company,
+                            Orders = cust.Orders
+                        });
+                        tpl.AddVariable("Customers", custs);
+                        tpl.AddVariable("user", "John Doe");
+                    }
+                },
+                wb =>
+                {
+                    wb.SaveAs("result.xlsx");
+                    //CompareWithGauge(wb, templateFile);
                 });
         }
 
